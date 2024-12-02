@@ -1,62 +1,39 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-
-// Async thunk for fetching news
-export const fetchNews = createAsyncThunk(
-  "news/fetchNews",
-  async ({ country, category }, { rejectWithValue }) => {
-    try {
-      const response = await fetch(
-        `https://newsapi.org/v2/top-headlines?country=${country}&category=${category}&apiKey=3739a4b697e34e53b470ec66c201298e`
-      );
-      const data = await response.json();
-
-      if (data.status !== "ok") throw new Error(data.message || "Failed to fetch news");
-      return data.articles;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
+import { createSlice } from "@reduxjs/toolkit";
 
 const newsSlice = createSlice({
   name: "news",
-  initialState: {
-    country: "us",
-    category: "general", // Default category
+  initialState: { 
+    country: "us", 
+    category: "general", 
     isLoading: false,
-    articles: [],
-    error: null,
+    newsMode:"top-headlines",
+    page:1,
   },
   reducers: {
     changeCountry: (state, action) => {
-      state.country = action.payload.country;
+      state.country = action.payload.country; // Update the country
     },
     changeCategory: (state, action) => {
-      state.category = action.payload.category;
+      state.category = action.payload.category; // Update the category
     },
     startLoading: (state) => {
-      state.isLoading = true;
+      state.isLoading = true; // Set loading state to true
     },
     stopLoading: (state) => {
-      state.isLoading = false;
+      state.isLoading = false; // Set loading state to false
     },
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchNews.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(fetchNews.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.articles = action.payload;
-      })
-      .addCase(fetchNews.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      });
+    toggelNewsMode: (state)=>{
+        state.newsMode = state.newsMode=== "top-headlines" ? "everything" : "top-headlines";
+    },
+    nextPage: (state)=>{
+      state.page = state.page +1;
+    },
+    prePage: (state)=>{
+      state.page = state.page -1;
+    }
+
   },
 });
 
-export const { changeCountry, changeCategory, startLoading, stopLoading } = newsSlice.actions;
+export const { changeCountry, changeCategory, startLoading, stopLoading,toggelNewsMode, nextPage, prePage } = newsSlice.actions;
 export default newsSlice.reducer;

@@ -1,61 +1,78 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchNews } from "../features/newsSlice";
 import NewsItem from "./NewsItem";
+import { useDispatch, useSelector } from "react-redux";
+import { startLoading, stopLoading, prePage, nextPage } from "../features/newsSlice";
+import styles from "./News.module.css";
+import Spinner from "./Spinner";
 
 const News = () => {
+  const [news, setNews] = useState([]);
   const dispatch = useDispatch();
-  const { articles, isLoading, country, category } = useSelector((state) => state.news);
-  const [page, setPage] = useState(1);
+  const { isLoading, newsMode, category, country, page } = useSelector(
+    (state) => state.news
+  );
+  const pageSize = 8;
+  const [totalPage, setTotalPage] = useState(0);
 
-  // Fetch news when component mounts or when `page`, `country`, or `category` changes
   useEffect(() => {
-    dispatch(fetchNews({ country, category, page }));
-  }, [dispatch, country, category, page]);
+    const fetchData = async () => {
+      let url = `https://newsapi.org/v2/${newsMode}?${
+        newsMode === "top-headlines" ? `country=${country}` : `q=${category}`
+      }&apiKey=3739a4b697e34e53b470ec66c201298e&page=${page}&pageSize=${pageSize}`;
 
-  // Handle pagination
-  const handleNext = () => {
-    setPage((prevPage) => prevPage + 1);
-  };
+      try {
+        dispatch(startLoading());
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const parseData = await response.json();
+        setNews(parseData.articles);
+        setTotalPage(parseData.totalResults / pageSize);
+      } catch (e) {
+        console.error("Error fetching data:", e);
+      } finally {
+        dispatch(stopLoading());
+      }
+    };
 
-  const handlePrevious = () => {
-    if (page > 1) setPage((prevPage) => prevPage - 1);
-  };
+    fetchData();
+  }, [country, newsMode, category, page, dispatch]);
 
   return (
     <div className="container my-3">
-      <h2 className="text-center">Around The Earth - Top Headlines</h2>
-
-      {isLoading ? (
-        <p className="text-center">Loading news...</p>
-      ) : (
-        <div className="row">
-          {articles.map((article, index) => (
-            <div className="col-md-4" key={index}>
-              <NewsItem
-                title={article.title}
-                description={article.description}
-                url={article.url}
-                urlToImage={article.urlToImage}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="container d-flex justify-content-between my-3">
+      <h2 className="text-center">
+        Around The Earth -{" "}
+        {newsMode === "top-headlines"
+          ? `Top headlines from ${country}`
+          : `${category} News`}
+      </h2>
+          {isLoading&&<Spinner/>}
+      <div className={styles.row}>
+        {news.map((article) => {
+          return (
+            article.content !== "[Removed]" && (
+              <div key={article.url}>
+                {!isLoading&&<NewsItem article={article} />}
+              </div>
+            )
+          );
+        })}
+      </div>
+      <div className="container d-flex justify-content-between">
         <button
           type="button"
           className="btn btn-dark btn-sm"
           disabled={page <= 1}
-          onClick={handlePrevious}
+          onClick={() => dispatch(prePage())}
         >
           &larr; Previous page
         </button>
         <button
           type="button"
           className="btn btn-dark btn-sm"
-          onClick={handleNext}
+          disabled={page + 1 > Math.ceil(totalPage)}
+          onClick={() => dispatch(nextPage())}
         >
           Next page &rarr;
         </button>
