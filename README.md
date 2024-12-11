@@ -8,9 +8,9 @@ Around-The-World is a news application that provides top headlines and news from
 ## 🖼️ Screenshots
 Below are placeholders for the sample images. Replace them with your own screenshots:
 
-- **Home Page:** ![Home Page](public/home.png)
-- **Category wise News:** ![Category wise News](public/category.png)
-- **Top-Headlines country wise:** ![Top-Headlines country wise](public/country.png)
+- **Home Page:** <br>![Home Page](public/home.png)
+- **Category wise News:** <br>![Category wise News](public/category.png)
+- **Top-Headlines country wise:** <br>![Top-Headlines country wise](public/country.png)
 
 ## ✨ Features
 - Fetches top headlines and global news.
