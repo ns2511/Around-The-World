@@ -42,7 +42,7 @@ const News = () => {
   return (
     <div className="container my-3">
       <h2 className="text-center">
-        Around The Earth -{" "}
+        Around The World -{" "}
         {newsMode === "top-headlines"
           ? `Top headlines from ${country}`
           : `${category} News`}
